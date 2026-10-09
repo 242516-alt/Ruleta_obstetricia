@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruleta & Cartas: EduSalud Sexual y Reproductiva (Offline)</title>
+    <!-- Tailwind CSS CDN (with fallback offline styles embedded below) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- JSZip para exportar el paquete completo en formato .ZIP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        },
+                        accent: {
+                            purple: '#a855f7',
+                            pink: '#ec4899',
+                            amber: '#f59e0b',
+                            rose: '#f43f5e',
+                            gold: '#fbbf24',
+                            cyan: '#06b6d4'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+                        display: ['Outfit', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'bounce-short': 'bounce 0.6s ease-in-out 2',
+                        'pulse-glow': 'pulseGlow 2s infinite',
+                        'shake': 'shake 0.4s ease-in-out'
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%, 100%': { boxShadow: '0 0 15px rgba(20, 184, 166, 0.4)' },
+                            '50%': { boxShadow: '0 0 30px rgba(168, 85, 247, 0.8)' }
+                        },
+                        shake: {
+                            '0%, 100%': { transform: 'translateX(0)' },
+                            '20%, 60%': { transform: 'translateX(-8px)' },
+                            '40%, 80%': { transform: 'translateX(8px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Fallback Core Typography and Dark Palette */
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            background: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #0f172a 60%, #042f2e 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .card-perspective {
+            perspective: 1200px;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .gold-card-bg {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.25) 0%, rgba(217, 119, 6, 0.35) 100%);
+            border: 2px solid #fbbf24 !important;
+            box-shadow: 0 0 25px rgba(251, 191, 36, 0.3);
+        }
+
+        .express-card-bg {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.25) 0%, rgba(168, 85, 247, 0.35) 100%);
+            border: 2px solid #ec4899 !important;
+            box-shadow: 0 0 25px rgba(236, 72, 153, 0.3);
+        }
+
+        /* Particle Overlay Canvas */
+        #fxCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* Inline SVG Icon styling helper */
+        .icon-svg {
+            display: inline-block;
+            width: 1.25em;
+            height: 1.25em;
+            vertical-align: -0.125em;
+            fill: currentColor;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        ::-webkit-scrollbar-thumb { background: rgba(20, 184, 166, 0.5); border-radius: 4px; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen justify-between selection:bg-brand-500 selection:text-white relative">
+
+    <!-- Self-contained Vector Symbols for 100% Offline Rendering -->
+    <svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+        <symbol id="icon-dharmachakra" viewBox="0 0 512 512"><path d="M256 0c141.4 0 256 114.6 256 256s-114.6 256-256 256S0 397.4 0 256 114.6 0 256 0zm0 64c-106 0-192 86-192 192s86 192 192 192 192-86 192-192S362 64 256 64zm0 64a128 128 0 1 1 0 256 128 128 0 0 1 0-256zm0 48a80 80 0 1 0 0 160 80 80 0 0 0 0-160z"/></symbol>
+        <symbol id="icon-gamepad" viewBox="0 0 640 512"><path d="M192 64C86 64 0 150 0 256s86 192 192 192c48 0 91.8-17.7 125.8-46.9l2.2-1.9 2.2 1.9C356.2 430.3 400 448 448 448c106 0 192-86 192-192S554 64 448 64c-48 0-91.8 17.7-125.8 46.9l-2.2 1.9-2.2-1.9C283.8 81.7 240 64 192 64zm-32 128h32v32h32v32h-32v32h-32v-32h-32v-32h32v-32zm288 32a24 24 0 1 1 0 48 24 24 0 0 1 0-48zm48 48a24 24 0 1 1 0 48 24 24 0 0 1 0-48z"/></symbol>
+        <symbol id="icon-book" viewBox="0 0 448 512"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H96zM384 448H96c-17.7 0-32-14.3-32-32s14.3-32 32-32H384v64z"/></symbol>
+        <symbol id="icon-download" viewBox="0 0 512 512"><path d="M288 32c0-17.7-14.3-32-32-32s-32 14.3-32 32V274.7l-73.4-73.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l128 128c12.5 12.5 32.8 12.5 45.3 0l128-128c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L288 274.7V32zM64 352c-17.7 0-32 14.3-32 32v64c0 17.7 14.3 32 32 32H448c17.7 0 32-14.3 32-32V384c0-17.7-14.3-32-32-32H64z"/></symbol>
+        <symbol id="icon-volume" viewBox="0 0 576 512"><path d="M301.1 34.8C312.6 40 320 51.4 320 64V448c0 12.6-7.4 24-18.9 29.2s-25 3.1-34.4-5.3L131.8 352H64c-35.3 0-64-28.7-64-64V224c0-35.3 28.7-64 64-64h67.8L266.7 40.1c9.4-8.4 22.9-10.5 34.4-5.3zM425 167c9.4-9.4 24.6-9.4 33.9 0c44.1 44.1 44.1 115.8 0 159.9c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9c25.4-25.4 25.4-66.6 0-92c-9.4-9.4-9.4-24.6 0-33.9z"/></symbol>
+        <symbol id="icon-trophy" viewBox="0 0 576 512"><path d="M400 0H176c-26.5 0-48 21.5-48 48v64H32c-17.7 0-32 14.3-32 32c0 70.7 57.3 128 128 128h13.2c16 40.4 48.7 72.8 89.8 86.2V416H160c-17.7 0-32 14.3-32 32s14.3 32 32 32H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H345.8V358.2c41.1-13.4 73.8-45.8 89.8-86.2H448c70.7 0 128-57.3 128-128c0-17.7-14.3-32-32-32H448V48c0-26.5-21.5-48-48-48z"/></symbol>
+        <symbol id="icon-heart" viewBox="0 0 512 512"><path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z"/></symbol>
+        <symbol id="icon-fire" viewBox="0 0 448 512"><path d="M159.3 5.4c7.8-7.3 19.8-7.2 27.4 01c4.5 4.3 19.3 18.9 38 43.8C252.8 85.6 288 141.6 288 208c0 30.6-8.9 59.2-24.2 83.3 26.8-21.7 48.2-52.1 59.9-88c2.9-8.9 11.2-15 20.6-15.3s18.2 5.2 21.8 13.9c22.6 54.3 21.9 116.1-2 169.8-23.7 53.2-73.4 92.5-132.1 104.3-58.7 11.8-119.3-5.2-161.7-45.4C28 388.7 5 330.3 6.6 270.2 8.3 210.1 34.4 153.5 78.1 112.5 106.8 85.6 137.9 44.5 159.3 5.4z"/></symbol>
+        <symbol id="icon-bolt" viewBox="0 0 384 512"><path d="M0 256L192 0v160h192L192 512V320H0z"/></symbol>
+        <symbol id="icon-scissors" viewBox="0 0 512 512"><path d="M371.8 192L496 67.8c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L326.5 146.7 281.3 101.5C303.1 72.8 300 31.4 272.9 6c-31.2-29.2-79.6-26.6-107.5 5.8-26.7 31-23.1 77.4 8 103.8 24.3 20.6 59.1 21.9 84.8 4l43.2 43.2L118.8 345.5C93.1 327.6 58.3 328.9 34 349.5c-31.1 26.4-34.7 72.8-8 103.8 27.9 32.4 76.3 35 107.5 5.8 27.1-25.4 30.2-66.8 8.4-95.5l45.2-45.2L310.8 442l139.9 139.9c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L371.8 192z"/></symbol>
+        <symbol id="icon-shield" viewBox="0 0 512 512"><path d="M256 0L0 96v128c0 141.4 109.3 273.8 256 320 146.7-46.2 256-178.6 256-320V96L256 0z"/></symbol>
+        <symbol id="icon-clock" viewBox="0 0 512 512"><path d="M256 0a256 256 0 1 0 0 512A256 256 0 1 0 256 0zm0 96c13.3 0 24 10.7 24 24V240l80 48c11.5 6.9 15.3 21.9 8.4 33.4s-21.9 15.3-33.4 8.4l-96-57.6c-4.4-2.6-7-7.4-7-12.4V120c0-13.3 10.7-24 24-24z"/></symbol>
+    </svg>
+
+    <!-- Particle Canvas for Celebrations & Effects -->
+    <canvas id="fxCanvas"></canvas>
+
+    <header class="w-full glass-panel sticky top-0 z-40 px-4 py-3 border-b border-white/10 shadow-2xl">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            
+            <!-- Logo & Title -->
+            <div class="flex items-center space-x-3">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-500 via-accent-purple to-amber-400 p-0.5 shadow-lg shadow-brand-500/20">
+                    <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-amber-400 text-xl font-extrabold">
+                        <svg class="icon-svg animate-spin-slow"><use href="#icon-dharmachakra"/></svg>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="font-display font-extrabold text-lg md:text-xl text-white tracking-wide flex items-center gap-2">
+                        EduSalud <span class="text-xs font-black uppercase tracking-wider bg-gradient-to-r from-brand-500 to-accent-purple text-white px-2.5 py-0.5 rounded-full shadow-sm">Ruleta & Cartas</span>
+                    </h1>
+                    <p class="text-[11px] text-slate-300 hidden sm:block font-medium">Prevención del Embarazo Adolescente • 100% Sin Internet</p>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div id="statsBar" class="hidden flex items-center gap-2 sm:gap-3 text-xs md:text-sm font-semibold">
+                <div class="bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-700 flex items-center gap-1.5 shadow-inner">
+                    <span id="levelLabel" class="text-slate-300 font-bold">Básico</span>
+                </div>
+                <div class="bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-700 flex items-center gap-1.5 shadow-inner">
+                    <svg class="icon-svg text-amber-400"><use href="#icon-trophy"/></svg>
+                    <span id="scoreText" class="text-amber-300 font-black text-sm">0 pts</span>
+                </div>
+                <div class="bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-700 flex items-center gap-1.5 text-rose-400 shadow-inner">
+                    <svg class="icon-svg text-rose-400 animate-pulse"><use href="#icon-heart"/></svg>
+                    <span id="livesText" class="font-black text-white text-sm">3</span>
+                </div>
+                <div id="streakBadge" class="bg-gradient-to-r from-amber-500 to-rose-500 px-3 py-1.5 rounded-xl text-white font-extrabold shadow-md flex items-center gap-1 animate-bounce-short">
+                    <svg class="icon-svg"><use href="#icon-fire"/></svg>
+                    <span id="streakText">x1</span>
+                </div>
+            </div>
+
+            <!-- Header Controls -->
+            <div class="flex items-center gap-2">
+                <button onclick="downloadZipGame()" title="Descargar paquete ZIP completo" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs md:text-sm font-bold rounded-xl border border-emerald-400/40 transition-all shadow-md active:scale-95 flex items-center gap-2">
+                    <svg class="icon-svg"><use href="#icon-download"/></svg>
+                    <span class="hidden sm:inline">Descargar .ZIP</span>
+                </button>
+                <button id="btnGuide" onclick="openGuideModal()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs md:text-sm font-bold rounded-xl border border-slate-600 transition-all shadow-md active:scale-95 flex items-center gap-2">
+                    <svg class="icon-svg text-brand-400"><use href="#icon-book"/></svg>
+                    <span class="hidden md:inline">Glosario</span>
+                </button>
+                <button id="btnSound" onclick="toggleSound()" class="w-10 h-10 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-600 flex items-center justify-center transition-all shadow-md active:scale-95">
+                    <svg class="icon-svg text-brand-400" id="soundIcon"><use href="#icon-volume"/></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-3 md:p-6 relative z-10">
+        
+        <!-- START SCREEN -->
+        <div id="startScreen" class="max-w-3xl w-full glass-panel rounded-3xl p-6 md:p-10 shadow-2xl border border-white/10 text-center relative overflow-hidden my-auto">
+            <div class="absolute -top-32 -left-32 w-72 h-72 bg-brand-500/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-32 -right-32 w-72 h-72 bg-accent-purple/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="inline-flex p-4 bg-gradient-to-tr from-brand-500/20 to-accent-purple/20 rounded-3xl border border-brand-500/30 text-brand-400 mb-4 shadow-lg animate-pulse-glow">
+                <svg class="w-10 h-10 fill-current"><use href="#icon-gamepad"/></svg>
+            </div>
+            <h2 class="font-display text-3xl md:text-5xl font-black text-white mb-3 tracking-tight">¡Ruleta, Cartas y Desafíos!</h2>
+            <p class="text-slate-300 text-sm md:text-base max-w-xl mx-auto mb-6 font-medium leading-relaxed">
+                Aprende, compite y pon a prueba tus decisiones sobre prevención del embarazo adolescente, mitos y métodos anticonceptivos. <strong>¡Funciona 100% sin conexión a internet!</strong>
+            </p>
+
+            <!-- Download Banner inside Start Screen -->
+            <div class="mb-8 p-3 rounded-2xl bg-emerald-950/60 border border-emerald-500/30 flex flex-wrap items-center justify-between gap-3 text-left">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl shrink-0">
+                        <svg class="icon-svg"><use href="#icon-download"/></svg>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold text-white">¿Quieres guardar el paquete en un archivo .ZIP?</h4>
+                        <p class="text-[11px] text-emerald-200/80">Obtén el paquete con el código del juego y el archivo de instrucciones listo para compartir.</p>
+                    </div>
+                </div>
+                <button onclick="downloadZipGame()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow-lg transition active:scale-95">
+                    Descargar Paquete .ZIP
+                </button>
+            </div>
+
+            <h3 class="text-xs font-black uppercase tracking-widest text-brand-400 mb-4 flex items-center justify-center gap-2">
+                Selecciona la Dificultad
+            </h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <!-- Level Basic -->
+                <button onclick="startGame('basico')" class="group relative bg-slate-900/80 hover:bg-slate-800/90 border-2 border-slate-700 hover:border-emerald-400 p-5 rounded-2xl text-left transition-all duration-300 shadow-xl hover:shadow-emerald-500/20 hover:-translate-y-1 active:scale-95">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-3 text-xl font-bold border border-emerald-500/30">
+                        🌱
+                    </div>
+                    <h4 class="font-bold text-white text-lg group-hover:text-emerald-400 transition">Básico</h4>
+                    <p class="text-xs text-slate-400 mt-1">Conceptos clave, identificación y mitos comunes. Tiempo relajado.</p>
+                    <div class="mt-4 text-[11px] font-bold text-emerald-400 flex items-center gap-1.5">
+                        <svg class="icon-svg"><use href="#icon-clock"/></svg> 30s por carta • Sin penalización
+                    </div>
+                </button>
+
+                <!-- Level Intermediate -->
+                <button onclick="startGame('intermedio')" class="group relative bg-slate-900/80 hover:bg-slate-800/90 border-2 border-slate-700 hover:border-accent-purple p-5 rounded-2xl text-left transition-all duration-300 shadow-xl hover:shadow-accent-purple/20 hover:-translate-y-1 active:scale-95">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/20 text-accent-purple flex items-center justify-center mb-3 text-xl font-bold border border-purple-500/30">
+                        <svg class="icon-svg"><use href="#icon-bolt"/></svg>
+                    </div>
+                    <h4 class="font-bold text-white text-lg group-hover:text-accent-purple transition">Intermedio</h4>
+                    <p class="text-xs text-slate-400 mt-1">Efectividad %, doble protección y situaciones cotidianas.</p>
+                    <div class="mt-4 text-[11px] font-bold text-accent-purple flex items-center gap-1.5">
+                        <svg class="icon-svg"><use href="#icon-clock"/></svg> 20s por carta • Multiplicador x2
+                    </div>
+                </button>
+
+                <!-- Level Difficult -->
+                <button onclick="startGame('dificil')" class="group relative bg-slate-900/80 hover:bg-slate-800/90 border-2 border-slate-700 hover:border-rose-500 p-5 rounded-2xl text-left transition-all duration-300 shadow-xl hover:shadow-rose-500/20 hover:-translate-y-1 active:scale-95">
+                    <div class="w-12 h-12 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center mb-3 text-xl font-bold border border-rose-500/30">
+                        <svg class="icon-svg"><use href="#icon-fire"/></svg>
+                    </div>
+                    <h4 class="font-bold text-white text-lg group-hover:text-rose-400 transition">Difícil</h4>
+                    <p class="text-xs text-slate-400 mt-1">Fallas de anticonceptivos, interacciones y decisiones avanzadas.</p>
+                    <div class="mt-4 text-[11px] font-bold text-rose-400 flex items-center gap-1.5">
+                        <svg class="icon-svg"><use href="#icon-clock"/></svg> 12s express • Máximo riesgo
+                    </div>
+                </button>
+            </div>
+
+            <!-- Features highlights -->
+            <div class="flex flex-wrap justify-center gap-4 text-xs font-semibold text-slate-300 bg-slate-950/40 py-3 px-4 rounded-2xl border border-white/5">
+                <div class="flex items-center gap-1.5">🪄 Comodines y Poderes</div>
+                <div class="flex items-center gap-1.5">👑 Cartas Doradas Especiales</div>
+                <div class="flex items-center gap-1.5">⚡ Desafíos Exprés V/F</div>
+            </div>
+        </div>
+
+        <div id="gameArena" class="hidden w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- LEFT COLUMN: ROULETTE WHEEL (5 Cols) -->
+            <div class="lg:col-span-5 glass-panel rounded-3xl p-5 border border-white/10 flex flex-col items-center justify-center relative shadow-2xl">
+                <div class="w-full flex justify-between items-center mb-2">
+                    <span class="text-xs font-black uppercase tracking-wider text-brand-400 flex items-center gap-1.5">
+                        <svg class="icon-svg text-amber-400"><use href="#icon-dharmachakra"/></svg> Ruleta de la Suerte
+                    </span>
+                    <span id="turnCounter" class="text-xs font-bold bg-slate-900 px-3 py-1 rounded-full text-slate-300 border border-slate-700">Ronda 1/10</span>
+                </div>
+
+                <!-- Canvas Wheel Pointer & Wheel -->
+                <div class="relative flex items-center justify-center my-2">
+                    <div class="absolute -top-4 z-30 text-amber-400 drop-shadow-[0_4px_10px_rgba(251,191,36,0.6)] text-4xl animate-bounce">
+                        ▼
+                    </div>
+                    <!-- Roulette Canvas -->
+                    <canvas id="rouletteCanvas" width="340" height="340" class="max-w-full h-auto drop-shadow-2xl rounded-full"></canvas>
+                </div>
+
+                <div class="w-full text-center mt-2">
+                    <p id="rouletteStatus" class="text-xs md:text-sm font-bold text-slate-200 h-6 flex items-center justify-center">¡Presiona el botón para girar la ruleta!</p>
+                    <button id="btnSpin" onclick="spinWheel()" class="w-full mt-2 py-4 px-6 bg-gradient-to-r from-brand-500 via-accent-purple to-pink-500 text-white font-black text-base rounded-2xl shadow-xl hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 group border border-white/20">
+                        <svg class="icon-svg group-hover:rotate-180 transition-transform duration-700 text-xl"><use href="#icon-dharmachakra"/></svg>
+                        <span>¡GIRAR RULETA!</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: CARDS & INTERACTION (7 Cols) -->
+            <div class="lg:col-span-7 flex flex-col gap-4">
+                
+                <!-- Mascot & Reactive Companion Banner -->
+                <div id="mascotBanner" class="glass-panel p-3 rounded-2xl flex items-center gap-3 border border-white/10 bg-slate-900/60 shadow-md">
+                    <div id="mascotAvatar" class="w-12 h-12 rounded-xl bg-gradient-to-tr from-brand-500 to-accent-purple flex items-center justify-center text-2xl shadow-inner shrink-0">
+                        🤖
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-bold uppercase tracking-widest text-brand-400">EduBot Tu Guía</div>
+                        <p id="mascotText" class="text-xs text-slate-200 font-semibold leading-snug">¡Hola! Gira la ruleta para descubrir qué desafío te tocará hoy.</p>
+                    </div>
+                </div>
+
+                <div id="cardStage" class="glass-panel rounded-3xl p-5 md:p-6 border border-white/10 shadow-2xl min-h-[460px] flex flex-col justify-between relative overflow-hidden">
+                    
+                    <!-- Timer Progress Bar -->
+                    <div class="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden mb-4 border border-slate-800 p-0.5">
+                        <div id="timerBar" class="h-full bg-gradient-to-r from-brand-400 via-amber-400 to-rose-500 w-full transition-all duration-100 ease-linear rounded-full"></div>
+                    </div>
+
+                    <!-- Placeholder View -->
+                    <div id="cardPlaceholder" class="flex-grow flex flex-col items-center justify-center text-center p-6 my-auto">
+                        <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-brand-500/20 to-accent-purple/20 border border-brand-500/40 flex items-center justify-center text-brand-400 text-3xl mb-4 animate-bounce">
+                            🎯
+                        </div>
+                        <h3 class="font-display font-extrabold text-xl text-white mb-1">¡La Ruleta Decide Tu Destino!</h3>
+                        <p class="text-xs md:text-sm text-slate-400 max-w-sm">
+                            Puedes obtener preguntas temáticas, <strong>Cartas Doradas de Puntos Dobles</strong> o <strong>Desafíos Exprés</strong> de respuesta rápida.
+                        </p>
+                    </div>
+
+                    <!-- Active Card View -->
+                    <div id="cardContainer" class="hidden card-perspective w-full flex-grow flex flex-col justify-between">
+                        <div>
+                            <!-- Badges Header -->
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                                <span id="cardCategoryBadge" class="text-xs font-black uppercase tracking-wider px-3 py-1 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/40 flex items-center gap-1.5">
+                                    Métodos de Barrera
+                                </span>
+                                <span id="cardPointsBadge" class="text-xs font-black text-amber-300 bg-amber-400/20 px-3 py-1 rounded-full border border-amber-400/40 shadow-sm flex items-center gap-1">
+                                    +100 pts
+                                </span>
+                            </div>
+
+                            <h3 id="cardQuestion" class="font-display font-black text-lg md:text-xl text-white mb-4 leading-snug">
+                                PREGUNTA
+                            </h3>
+                        </div>
+
+                        <!-- Options Area -->
+                        <div id="cardOptionsArea" class="space-y-2.5 my-3">
+                            <!-- Options injected dynamically by JS -->
+                        </div>
+
+                        <!-- Power-ups & Lifelines Toolbar -->
+                        <div class="flex flex-wrap justify-between items-center pt-3 border-t border-slate-800 text-xs gap-2">
+                            <span class="text-slate-400 text-[11px] font-bold">Comodines de Ayuda:</span>
+                            <div class="flex gap-2">
+                                <button id="btnPowerup5050" onclick="usePowerup('5050')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-400/30 rounded-xl font-bold transition flex items-center gap-1 active:scale-95">
+                                    <svg class="icon-svg"><use href="#icon-scissors"/></svg> 50/50 (<span id="count5050">1</span>)
+                                </button>
+                                <button id="btnPowerupShield" onclick="usePowerup('shield')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-400/30 rounded-xl font-bold transition flex items-center gap-1 active:scale-95">
+                                    <svg class="icon-svg"><use href="#icon-shield"/></svg> Escudo (<span id="countShield">1</span>)
+                                </button>
+                                <button id="btnPowerupTime" onclick="usePowerup('time')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-400/30 rounded-xl font-bold transition flex items-center gap-1 active:scale-95">
+                                    <svg class="icon-svg"><use href="#icon-clock"/></svg> +10s (<span id="countTime">1</span>)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="feedbackView" class="hidden flex-grow flex flex-col justify-between py-2 animate-fade-in">
+                        <div class="text-center my-auto">
+                            <div id="feedbackIconContainer" class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 text-3xl shadow-xl">
+                                <span id="feedbackIcon">✓</span>
+                            </div>
+                            <h3 id="feedbackTitle" class="font-display font-black text-2xl mb-1">¡Respuesta Correcta!</h3>
+                            <p id="feedbackText" class="text-xs md:text-sm text-slate-200 bg-slate-950/80 p-4 rounded-2xl border border-slate-800 text-left max-h-48 overflow-y-auto my-3 leading-relaxed shadow-inner">
+                                Explicación detallada...
+                            </p>
+                        </div>
+
+                        <button onclick="nextRound()" class="w-full py-3.5 bg-gradient-to-r from-brand-500 to-accent-purple hover:brightness-110 text-white font-black text-base rounded-2xl transition shadow-xl flex items-center justify-center gap-2 active:scale-95">
+                            <span>Siguiente Desafío</span>
+                            ➔
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <div id="gameOverScreen" class="hidden max-w-xl w-full glass-panel rounded-3xl p-8 text-center border border-white/10 shadow-2xl relative my-auto">
+            <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-400 via-brand-500 to-accent-purple flex items-center justify-center mx-auto mb-4 text-white text-4xl shadow-xl animate-bounce">
+                👑
+            </div>
+            
+            <h2 id="endTitle" class="font-display text-3xl font-black text-white mb-1">¡Ronda Finalizada!</h2>
+            <p id="endSubtitle" class="text-slate-300 text-xs md:text-sm mb-6 font-medium">Has completado con éxito la aventura del conocimiento.</p>
+
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 text-center shadow-inner">
+                    <span class="text-[10px] text-slate-400 uppercase tracking-widest block font-bold">Puntaje Final</span>
+                    <span id="finalScore" class="font-display text-3xl font-black text-amber-400">1,250</span>
+                </div>
+                <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 text-center shadow-inner">
+                    <span class="text-[10px] text-slate-400 uppercase tracking-widest block font-bold">Precisión</span>
+                    <span id="finalAccuracy" class="font-display text-3xl font-black text-emerald-400">80%</span>
+                </div>
+            </div>
+
+            <!-- Dynamic Badge Unlock -->
+            <div id="badgeContainer" class="bg-gradient-to-r from-brand-500/20 to-accent-purple/20 border border-brand-500/40 p-4 rounded-2xl mb-6 flex items-center gap-3 text-left shadow-lg">
+                <div class="w-12 h-12 rounded-2xl bg-brand-500/30 text-amber-300 flex items-center justify-center text-2xl shrink-0 border border-brand-500/40">
+                    🏆
+                </div>
+                <div>
+                    <h4 id="badgeTitle" class="font-bold text-white text-sm">Promotor de Salud Reproductiva</h4>
+                    <p id="badgeDesc" class="text-xs text-slate-300">Demuestras excelente conocimiento sobre métodos y toma de decisiones.</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button onclick="restartGame()" class="flex-1 py-3.5 bg-gradient-to-r from-brand-500 to-accent-purple hover:brightness-110 text-white font-black text-sm rounded-xl transition shadow-lg flex items-center justify-center gap-2 active:scale-95">
+                    ↻ Jugar de Nuevo
+                </button>
+                <button onclick="openGuideModal()" class="flex-1 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm rounded-xl border border-slate-600 transition flex items-center justify-center gap-2 active:scale-95">
+                    <svg class="icon-svg"><use href="#icon-book"/></svg> Repasar Glosario
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="guideModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-4xl max-h-[90vh] rounded-3xl border border-white/10 flex flex-col overflow-hidden shadow-2xl">
+            
+            <div class="p-5 border-b border-white/10 flex items-center justify-between bg-slate-900/80">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-brand-500/20 text-brand-400 flex items-center justify-center text-xl border border-brand-500/30">
+                        <svg class="icon-svg"><use href="#icon-book"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-display font-extrabold text-white text-lg">Guía Informativa & Glosario</h3>
+                        <p class="text-xs text-slate-400">Información confiable sobre anticoncepción y salud sexual (Disponible sin conexión)</p>
+                    </div>
+                </div>
+                <button onclick="closeGuideModal()" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition font-bold">
+                    ✕
+                </button>
+            </div>
+
+            <!-- Modal Category Filters -->
+            <div class="p-3 bg-slate-900/60 border-b border-white/5 flex flex-wrap gap-2">
+                <button onclick="filterGuide('all')" class="guide-tab active px-3 py-1.5 rounded-xl text-xs font-bold bg-brand-500 text-white transition">Todos</button>
+                <button onclick="filterGuide('barrera')" class="guide-tab px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Barrera</button>
+                <button onclick="filterGuide('hormonal')" class="guide-tab px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Hormonales</button>
+                <button onclick="filterGuide('diu')" class="guide-tab px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">DIU e Implante</button>
+                <button onclick="filterGuide('emergencia')" class="guide-tab px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Emergencia</button>
+                <button onclick="filterGuide('mitos')" class="guide-tab px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Mitos y Verdades</button>
+            </div>
+
+            <!-- Content List -->
+            <div id="guideContent" class="p-5 overflow-y-auto space-y-3 flex-grow">
+                <!-- Injected dynamically -->
+            </div>
+
+            <div class="p-3 bg-slate-900/90 border-t border-white/10 text-center text-xs text-slate-400 font-medium">
+                Recordatorio: En caso de dudas particulares, acude a un profesional médico o centro de salud.
+            </div>
+        </div>
+    </div>
+
+    <footer class="w-full glass-panel py-3 px-4 border-t border-white/10 text-center text-xs text-slate-400 z-10">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+            <span>EduSalud © Juego Educativo • Funcional 100% Sin Internet</span>
+            <span class="text-slate-400 font-semibold">Educación Sexual Integral (ESI) • Salud & Aprendizaje</span>
+        </div>
+    </footer>
+
+    <script>
+        /* NATIVE WEB AUDIO SYNTHESIZER (No Internet CDN Required) */
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    audioCtx = new AudioContextClass();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'tick') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(200, now + 0.04);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.04);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.04);
+            } else if (type === 'spin') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(450, now + 0.1);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'correct') {
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0, now + idx * 0.07);
+                    gain.gain.linearRampToValueAtTime(0.12, now + idx * 0.07 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.25);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + idx * 0.07);
+                    osc.stop(now + idx * 0.07 + 0.25);
+                });
+            } else if (type === 'wrong') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'gold' || type === 'win') {
+                [440, 554.37, 659.25, 880].forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0, now + idx * 0.08);
+                    gain.gain.linearRampToValueAtTime(0.15, now + idx * 0.08 + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.3);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + idx * 0.08);
+                    osc.stop(now + idx * 0.08 + 0.3);
+                });
+            } else if (type === 'powerup') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(900, now + 0.15);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+        }
+
+        /* OFFLINE HTML & ZIP DOWNLOADER FUNCTIONS */
+        function downloadOfflineGame() {
+            const htmlString = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+            const blob = new Blob([htmlString], { type: 'text/html;charset=utf-8' });
+            const downloadUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = 'EduSalud_Ruleta_y_Cartas_Offline.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(downloadUrl);
+        }
+
+        function downloadZipGame() {
+            if (typeof JSZip === 'undefined') {
+                downloadOfflineGame();
+                return;
+            }
+            const zip = new JSZip();
+            const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+            
+            zip.file("index.html", htmlContent);
+            zip.file("INSTRUCCIONES_Y_LEAME.txt", 
+                "=====================================================\n" +
+                "  EDUSALUD: RULETA & CARTAS (JUEGO EDUCATIVO ESI)\n" +
+                "=====================================================\n\n" +
+                "¿CÓMO EJECUTAR EL JUEGO?\n" +
+                "1. Extrae el contenido de este archivo .ZIP en tu carpeta preferida.\n" +
+                "2. Haz doble clic en 'index.html' para abrirlo en tu navegador web (Chrome, Edge, Firefox, Safari, etc.).\n" +
+                "3. ¡Listo! El juego funciona 100% sin conexión a internet y contiene sintetizador de audio integrado.\n\n" +
+                "¡Esperamos que disfrutes aprendiendo y jugando!"
+            );
+
+            zip.generateAsync({ type: "blob" }).then(function(content) {
+                const downloadUrl = URL.createObjectURL(content);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = 'EduSalud_Juego_Completo.zip';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(downloadUrl);
+            });
+        }
+
+        /* PARTICLE ENGINE FOR CONFETTI / CELEBRATIONS */
+        const fxCanvas = document.getElementById('fxCanvas');
+        const fxCtx = fxCanvas.getContext('2d');
+        let particles = [];
+
+        function resizeFxCanvas() {
+            fxCanvas.width = window.innerWidth;
+            fxCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeFxCanvas);
+        resizeFxCanvas();
+
+        function createConfetti() {
+            const colors = ['#14b8a6', '#a855f7', '#fbbf24', '#ec4899', '#3b82f6'];
+            for (let i = 0; i < 60; i++) {
+                particles.push({
+                    x: window.innerWidth / 2,
+                    y: window.innerHeight / 2,
+                    vx: (Math.random() - 0.5) * 16,
+                    vy: (Math.random() - 0.8) * 16,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    size: Math.random() * 8 + 4,
+                    alpha: 1,
+                    rotation: Math.random() * 360
+                });
+            }
+        }
+
+        function animateParticles() {
+            fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+            particles.forEach((p, index) => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.4;
+                p.alpha -= 0.015;
+
+                fxCtx.save();
+                fxCtx.globalAlpha = Math.max(0, p.alpha);
+                fxCtx.fillStyle = p.color;
+                fxCtx.translate(p.x, p.y);
+                fxCtx.rotate((p.rotation * Math.PI) / 180);
+                fxCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                fxCtx.restore();
+
+                if (p.alpha <= 0) particles.splice(index, 1);
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        let currentDifficulty = 'basico';
+        let currentRound = 1;
+        const totalRounds = 10;
+        let score = 0;
+        let lives = 3;
+        let streak = 0;
+        let correctAnswersCount = 0;
+        
+        let powerups = {
+            '5050': 1,
+            'shield': 1,
+            'time': 1
+        };
+        let isShieldActive = false;
+
+        let isSpinning = false;
+        let currentSlice = null;
+        let currentCard = null;
+        let timerInterval = null;
+        let timeLeft = 0;
+        let maxTime = 30;
+
+        const slices = [
+            { id: 'barrera', name: 'M. Barrera', color: '#0d9488', type: 'normal' },
+            { id: 'hormonal', name: 'M. Hormonales', color: '#8b5cf6', type: 'normal' },
+            { id: 'gold', name: '✨ CARTA DORADA', color: '#d97706', type: 'gold' },
+            { id: 'mitos', name: 'Mitos/Verdades', color: '#f59e0b', type: 'normal' },
+            { id: 'casos', name: 'Dilemas Reales', color: '#ec4899', type: 'normal' },
+            { id: 'express', name: '⚡ DESAFÍO EXPRÉS', color: '#db2777', type: 'express' },
+            { id: 'doble', name: 'Doble Protección', color: '#10b981', type: 'normal' },
+            { id: 'diu', name: 'DIU e Implante', color: '#0284c7', type: 'normal' }
+        ];
+
+        /* QUESTION DATABASE BY DIFFICULTY */
+        const questionDatabase = {
+            basico: [
+                {
+                    category: 'barrera',
+                    type: 'mcq',
+                    points: 100,
+                    question: '¿Cuál es el único método anticonceptivo que PREVIENE embarazos no planeados E Infecciones de Transmisión Sexual (ITS)?',
+                    options: ['Pastillas anticonceptivas', 'Condón (masculino/femenino)', 'Inyección mensual', 'DIU de Cobre'],
+                    correct: 1,
+                    explanation: 'El condón es el único método de barrera que impide el paso de virus y bacterias, protegiendo contra ITS y embarazo.'
+                },
+                {
+                    category: 'mitos',
+                    type: 'mcq',
+                    points: 100,
+                    question: 'Mito o Realidad: "Usar dos condones al mismo tiempo duplica la protección."',
+                    options: ['Realidad: Doble funda es más seguro', 'Mito: La fricción entre látex los rompe fácilmente', 'Realidad: Solo si son de diferente marca', 'Mito: Solo aplica para condón femenino'],
+                    correct: 1,
+                    explanation: '¡FALSO! La fricción entre ambos condones puede romperlos en segundos. Usa solo un condón a la vez.'
+                },
+                {
+                    category: 'hormonal',
+                    type: 'mcq',
+                    points: 100,
+                    question: '¿Cómo funcionan principalmente las hormonas anticonceptivas?',
+                    options: ['Destruyen el espermatozoide', 'Inhiben la ovulación y espesan el moco cervical', 'Crean una malla física en el útero', 'Nivelan el estado de ánimo'],
+                    correct: 1,
+                    explanation: 'Las hormonas impiden que el ovario libere un óvulo e impiden el paso de espermatozoides.'
+                },
+                {
+                    category: 'casos',
+                    type: 'mcq',
+                    points: 100,
+                    question: 'Sofía y Mateo quieren iniciar relaciones sexuales de forma responsable. ¿Qué deben hacer?',
+                    options: ['Confiar en retirar el pene antes de eyacular', 'Informarse, elegir un método adecuado y consultar salud médica', 'Usar la pastilla de emergencia cada fin de semana', 'No planear nada'],
+                    correct: 1,
+                    explanation: 'La toma de decisiones informada y la consulta médica garantizan una protección segura y consciente.'
+                },
+                {
+                    category: 'express',
+                    type: 'tf',
+                    points: 120,
+                    question: '¿VERDADERO O FALSO? "El líquido preseminal puede contener espermatozoides capaces de embarazar."',
+                    options: ['VERDADERO', 'FALSO'],
+                    correct: 0,
+                    explanation: '¡VERDADERO! Por eso el método del "coito interrumpido" (retirada) NO es seguro.'
+                }
+            ],
+            intermedio: [
+                {
+                    category: 'barrera',
+                    type: 'mcq',
+                    points: 200,
+                    question: '¿Cuál es la efectividad del condón masculino con un USO CORRECTO y constante?',
+                    options: ['70%', '85%', '98%', '100%'],
+                    correct: 2,
+                    explanation: 'Con un uso perfecto llega hasta un 98%. Baja a 85% por errores de colocación o falta de lubricante adecuado.'
+                },
+                {
+                    category: 'doble',
+                    type: 'mcq',
+                    points: 200,
+                    question: '¿En qué consiste el concepto de "Doble Protección"?',
+                    options: ['Usar condón + un método hormonal o DIU', 'Tomar dos pastillas del día después', 'Usar dos métodos naturales', 'Usar parche e inyección al tiempo'],
+                    correct: 0,
+                    explanation: 'Combina el condón (para evitar ITS) con un método altamente eficaz para prevenir embarazos.'
+                },
+                {
+                    category: 'diu',
+                    type: 'mcq',
+                    points: 200,
+                    question: '¿Dónde se coloca el implante subdérmico y cuánto dura?',
+                    options: ['En el muslo, dura 1 año', 'Debajo de la piel del brazo, dura 3 a 5 años', 'En la cadera, dura 6 meses', 'En la espalda, dura 10 años'],
+                    correct: 1,
+                    explanation: 'Es una pequeña varilla colocada bajo la piel del brazo no dominante que brinda protección sostenida de 3 a 5 años.'
+                },
+                {
+                    category: 'express',
+                    type: 'tf',
+                    points: 220,
+                    question: '¿VERDADERO O FALSO? "La primera vez que una persona tiene relaciones no puede quedar embarazada."',
+                    options: ['VERDADERO', 'FALSO'],
+                    correct: 1,
+                    explanation: '¡FALSO! Si hay penetración y ovulación, la probabilidad biológica de embarazo existe desde la primera relación.'
+                }
+            ],
+            dificil: [
+                {
+                    category: 'hormonal',
+                    type: 'mcq',
+                    points: 300,
+                    question: '¿Por qué ciertos antibióticos o anticonvulsivos reducen el efecto de las pastillas anticonceptivas?',
+                    options: ['Aceleran el metabolismo hepático que elimina la hormona', 'Destruyen el estómago', 'Bloquean el agua en el cuerpo', 'Inactivan el óvulo'],
+                    correct: 0,
+                    explanation: 'Medicamentos como la Rifampicina inducen enzimas hepáticas que eliminan rápidamente las hormonas del torrente sanguíneo.'
+                },
+                {
+                    category: 'casos',
+                    type: 'mcq',
+                    points: 300,
+                    question: 'Se rompió el condón durante la relación. ¿Qué anticoncepción de EMERGENCIA es adecuada en las primeras 72h?',
+                    options: ['Tomar un té caliente de hierbas', 'Hacerse duchas vaginales', 'Pastilla de Anticoncepción de Emergencia (PAE)', 'Esperar al periodo'],
+                    correct: 2,
+                    explanation: 'La PAE retrasa la ovulación. Es más efectiva cuanto más rápido se tome dentro de las primeras 72h.'
+                },
+                {
+                    category: 'express',
+                    type: 'tf',
+                    points: 350,
+                    question: '¿VERDADERO O FALSO? "Los lubricantes a base de aceite (aceite de bebé, vaselina) se pueden usar con condones de látex."',
+                    options: ['VERDADERO', 'FALSO'],
+                    correct: 1,
+                    explanation: '¡FALSO! Los aceites degradan el látex en segundos haciendo que el condón se rompa. Usa lubricantes a base de agua o silicona.'
+                }
+            ]
+        };
+
+        const glossaryData = [
+            { type: 'barrera', title: 'Condón Masculino y Femenino', tag: 'Previene ITS', desc: 'Funda delgada que previene infecciones (VIH, Sífilis, VPH) y embarazo.' },
+            { type: 'hormonal', title: 'Implante Subdérmico', tag: '99%+ Eficacia', desc: 'Varilla bajo la piel del brazo. Ofrece protección de 3 a 5 años.' },
+            { type: 'hormonal', title: 'Pastillas Anticonceptivas', tag: 'Uso Diario', desc: 'Comprimidos hormonales de toma diaria estricta para inhibir ovulación.' },
+            { type: 'diu', title: 'DIU (Cobre u Hormonal)', tag: 'Larga Duración', desc: 'Dispositivo en forma de T colocado dentro del útero por personal de salud.' },
+            { type: 'emergencia', title: 'Pastilla de Emergencia (PAE)', tag: 'Hasta 72h', desc: 'Uso imprevisto si falla el condón. Retrasa la ovulación. No es de uso regular.' },
+            { type: 'mitos', title: 'Mito del Coito Interrumpido', tag: '¡Inseguro!', desc: 'El líquido preseminal puede llevar espermatozoides e ITS. No es confiable.' }
+        ];
+
+        let canvas = document.getElementById('rouletteCanvas');
+        let ctx = canvas.getContext('2d');
+        let currentAngle = 0;
+
+        function drawRoulette() {
+            const numSlices = slices.length;
+            const sliceAngle = (2 * Math.PI) / numSlices;
+            const radius = canvas.width / 2 - 12;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < numSlices; i++) {
+                const angle = currentAngle + i * sliceAngle;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, angle, angle + sliceAngle);
+                ctx.closePath();
+                
+                ctx.fillStyle = slices[i].color;
+                ctx.fill();
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#0f172a';
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(angle + sliceAngle / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 12px sans-serif";
+                ctx.shadowColor = "rgba(0,0,0,0.8)";
+                ctx.shadowBlur = 4;
+                ctx.fillText(slices[i].name, radius - 18, 4);
+                ctx.restore();
+            }
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 32, 0, 2 * Math.PI);
+            ctx.fillStyle = '#0f172a';
+            ctx.fill();
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = "bold 11px sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("GIRO", centerX, centerY + 4);
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+
+            isSpinning = true;
+            document.getElementById('btnSpin').disabled = true;
+            document.getElementById('btnSpin').classList.add('opacity-50', 'cursor-not-allowed');
+            document.getElementById('rouletteStatus').textContent = "¡Girando la ruleta del conocimiento!...";
+            
+            playSound('spin');
+
+            const spinRounds = 5 + Math.random() * 3;
+            const targetExtraAngle = Math.random() * Math.PI * 2;
+            const totalRotation = spinRounds * Math.PI * 2 + targetExtraAngle;
+            
+            const startAngle = currentAngle;
+            const duration = 3200;
+            let startTime = null;
+            let lastTickSlice = -1;
+
+            function animateSpin(timestamp) {
+                if (!startTime) startTime = timestamp;
+                const elapsed = timestamp - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const easeOut = 1 - Math.pow(1 - progress, 3.5);
+                currentAngle = startAngle + totalRotation * easeOut;
+                
+                const currentSliceIdx = Math.floor((currentAngle % (Math.PI * 2)) / ((Math.PI * 2) / slices.length));
+                if (currentSliceIdx !== lastTickSlice) {
+                    playSound('tick');
+                    lastTickSlice = currentSliceIdx;
+                }
+
+                drawRoulette();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateSpin);
+                } else {
+                    isSpinning = false;
+                    resolveSpin();
+                }
+            }
+
+            requestAnimationFrame(animateSpin);
+        }
+
+        function resolveSpin() {
+            const normalizedAngle = (2 * Math.PI - (currentAngle % (2 * Math.PI))) % (2 * Math.PI);
+            const sliceAngle = (2 * Math.PI) / slices.length;
+            const adjustedAngle = (normalizedAngle + Math.PI / 2) % (2 * Math.PI);
+            const selectedIndex = Math.floor(adjustedAngle / sliceAngle) % slices.length;
+            
+            currentSlice = slices[selectedIndex];
+            
+            if (currentSlice.type === 'gold') {
+                updateMascot("🌟 ¡Increíble! ¡Caíste en Carta Dorada! Todos los puntos se duplican.", "🤩");
+                playSound('gold');
+            } else if (currentSlice.type === 'express') {
+                updateMascot("⚡ ¡Desafío Exprés! Responde rápido Verdadero o Falso.", "🔥");
+                playSound('gold');
+            } else {
+                updateMascot(`¡Nos cayó en ${currentSlice.name}! Lee atentamente la carta.`, "🤔");
+                playSound('win');
+            }
+
+            document.getElementById('rouletteStatus').innerHTML = `¡Cayó en <span class="text-amber-400 font-bold">${currentSlice.name}</span>!`;
+
+            setTimeout(() => {
+                drawCardForCategory(currentSlice.id);
+            }, 600);
+        }
+
+        function drawCardForCategory(categoryId) {
+            let pool = questionDatabase[currentDifficulty].filter(q => q.category === categoryId);
+            
+            if (pool.length === 0) {
+                const fullPool = questionDatabase[currentDifficulty];
+                currentCard = fullPool[Math.floor(Math.random() * fullPool.length)];
+            } else {
+                currentCard = pool[Math.floor(Math.random() * pool.length)];
+            }
+
+            renderCard(currentCard);
+        }
+
+        function renderCard(card) {
+            document.getElementById('cardPlaceholder').classList.add('hidden');
+            document.getElementById('feedbackView').classList.add('hidden');
+            
+            const cardStage = document.getElementById('cardStage');
+            cardStage.className = "glass-panel rounded-3xl p-5 md:p-6 border border-white/10 shadow-2xl min-h-[460px] flex flex-col justify-between relative overflow-hidden";
+            
+            if (currentSlice.type === 'gold') {
+                cardStage.classList.add('gold-card-bg');
+            } else if (currentSlice.type === 'express') {
+                cardStage.classList.add('express-card-bg');
+            }
+
+            document.getElementById('cardContainer').classList.remove('hidden');
+
+            const categoryInfo = slices.find(s => s.id === card.category) || slices[0];
+            
+            const badge = document.getElementById('cardCategoryBadge');
+            badge.textContent = categoryInfo.name;
+            badge.style.backgroundColor = `${categoryInfo.color}33`;
+            badge.style.borderColor = categoryInfo.color;
+
+            let finalPoints = card.points * (currentSlice.type === 'gold' ? 2 : 1) * (streak > 1 ? streak : 1);
+            document.getElementById('cardPointsBadge').textContent = `+${finalPoints} pts`;
+            document.getElementById('cardQuestion').textContent = card.question;
+
+            const optionsArea = document.getElementById('cardOptionsArea');
+            optionsArea.innerHTML = '';
+
+            card.options.forEach((optText, index) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-3.5 rounded-2xl bg-slate-900/90 hover:bg-brand-600/30 border border-slate-700 hover:border-brand-400 text-sm text-slate-100 transition-all font-semibold flex items-center justify-between group shadow-md active:scale-95";
+                btn.onclick = () => selectOption(index);
+                btn.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="w-7 h-7 rounded-xl bg-slate-800 text-slate-300 font-extrabold text-xs flex items-center justify-center group-hover:bg-brand-500 group-hover:text-white transition">
+                            ${String.fromCharCode(65 + index)}
+                        </span>
+                        <span>${optText}</span>
+                    </div>
+                `;
+                optionsArea.appendChild(btn);
+            });
+
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            
+            if (currentDifficulty === 'basico') maxTime = 30;
+            else if (currentDifficulty === 'intermedio') maxTime = 20;
+            else maxTime = 12;
+
+            if (currentSlice.type === 'express') maxTime = 10;
+
+            timeLeft = maxTime;
+            const timerBar = document.getElementById('timerBar');
+            timerBar.style.width = '100%';
+
+            timerInterval = setInterval(() => {
+                timeLeft -= 0.1;
+                const percentage = Math.max(0, (timeLeft / maxTime) * 100);
+                timerBar.style.width = `${percentage}%`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeOut();
+                }
+            }, 100);
+        }
+
+        function handleTimeOut() {
+            playSound('wrong');
+            if (isShieldActive) {
+                isShieldActive = false;
+                updateMascot("🛡️ ¡Tu escudo te salvó de perder una vida en este tiempo agotado!", "🛡️");
+            } else {
+                lives--;
+                streak = 1;
+                updateMascot("⌛ ¡Se acabó el tiempo! En decisiones de salud, el tiempo es vital.", "😅");
+            }
+            updateStatsUI();
+            showFeedback(false, "El tiempo expiró antes de responder.");
+        }
+
+        function usePowerup(type) {
+            playSound('powerup');
+            if (type === '5050') {
+                if (powerups['5050'] <= 0) return;
+                powerups['5050']--;
+                document.getElementById('count5050').textContent = powerups['5050'];
+                
+                const buttons = document.getElementById('cardOptionsArea').children;
+                let removed = 0;
+                for (let i = 0; i < buttons.length; i++) {
+                    if (i !== currentCard.correct && removed < 2) {
+                        buttons[i].classList.add('opacity-25', 'pointer-events-none');
+                        removed++;
+                    }
+                }
+                updateMascot("✂️ ¡Se descartaron 2 opciones incorrectas!", "💡");
+            } else if (type === 'shield') {
+                if (powerups['shield'] <= 0) return;
+                powerups['shield']--;
+                document.getElementById('countShield').textContent = powerups['shield'];
+                isShieldActive = true;
+                updateMascot("🛡️ ¡Escudo activado! Tu próxima falla no te quitará vida.", "🛡️");
+            } else if (type === 'time') {
+                if (powerups['time'] <= 0) return;
+                powerups['time']--;
+                document.getElementById('countTime').textContent = powerups['time'];
+                timeLeft += 10;
+                updateMascot("⏳ ¡Agregaste +10 segundos extras al reloj!", "⏱️");
+            }
+        }
+
+        function selectOption(selectedIndex) {
+            clearInterval(timerInterval);
+            const isCorrect = (selectedIndex === currentCard.correct);
+
+            if (isCorrect) {
+                playSound('correct');
+                createConfetti();
+                const basePts = currentCard.points * (currentSlice.type === 'gold' ? 2 : 1);
+                const ptsGained = basePts * (streak > 0 ? streak : 1);
+                score += ptsGained;
+                streak++;
+                correctAnswersCount++;
+                
+                updateMascot(`¡Excelente respuesta! +${ptsGained} pts extra.`, "🎉");
+                showFeedback(true, currentCard.explanation, ptsGained);
+            } else {
+                playSound('wrong');
+                document.getElementById('cardStage').classList.add('animate-shake');
+                setTimeout(() => document.getElementById('cardStage').classList.remove('animate-shake'), 500);
+
+                if (isShieldActive) {
+                    isShieldActive = false;
+                    updateMascot("🛡️ ¡Tu escudo absorbió el error! No perdiste vida.", "🛡️");
+                } else {
+                    lives--;
+                    streak = 1;
+                    updateMascot("¡Oh no! Repasa la explicación para la próxima.", "😅");
+                }
+                showFeedback(false, currentCard.explanation);
+            }
+
+            updateStatsUI();
+        }
+
+        function showFeedback(isCorrect, text, ptsGained = 0) {
+            document.getElementById('cardContainer').classList.add('hidden');
+            const feedbackView = document.getElementById('feedbackView');
+            feedbackView.classList.remove('hidden');
+
+            const iconContainer = document.getElementById('feedbackIconContainer');
+            const icon = document.getElementById('feedbackIcon');
+            const title = document.getElementById('feedbackTitle');
+            const explanation = document.getElementById('feedbackText');
+
+            if (isCorrect) {
+                iconContainer.className = "w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 text-3xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-emerald-500/20 shadow-lg";
+                icon.textContent = "✓";
+                title.textContent = `¡Respuesta Correcta! +${ptsGained} pts`;
+                title.className = "font-display font-black text-2xl mb-1 text-emerald-400";
+            } else {
+                iconContainer.className = "w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3 text-3xl bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-rose-500/20 shadow-lg";
+                icon.textContent = "✕";
+                title.textContent = "Respuesta Incorrecta";
+                title.className = "font-display font-black text-2xl mb-1 text-rose-400";
+            }
+
+            explanation.innerHTML = `<strong class="text-brand-400 block mb-1">Consejo Educativo:</strong>${text}`;
+        }
+
+        function updateMascot(text, avatar = "🤖") {
+            document.getElementById('mascotText').textContent = text;
+            document.getElementById('mascotAvatar').textContent = avatar;
+        }
+
+        function nextRound() {
+            if (lives <= 0 || currentRound >= totalRounds) {
+                endGame();
+                return;
+            }
+
+            currentRound++;
+            document.getElementById('turnCounter').textContent = `Ronda ${currentRound}/${totalRounds}`;
+            
+            document.getElementById('feedbackView').classList.add('hidden');
+            document.getElementById('cardPlaceholder').classList.remove('hidden');
+
+            document.getElementById('btnSpin').disabled = false;
+            document.getElementById('btnSpin').classList.remove('opacity-50', 'cursor-not-allowed');
+            document.getElementById('rouletteStatus').textContent = "¡Gira la ruleta para tu siguiente desafío!";
+            
+            updateMascot("¡Listo para girar la ruleta de nuevo!", "🤖");
+        }
+
+        function startGame(difficulty) {
+            currentDifficulty = difficulty;
+            score = 0;
+            lives = 3;
+            streak = 1;
+            currentRound = 1;
+            correctAnswersCount = 0;
+            powerups = { '5050': 1, 'shield': 1, 'time': 1 };
+            isShieldActive = false;
+
+            document.getElementById('count5050').textContent = 1;
+            document.getElementById('countShield').textContent = 1;
+            document.getElementById('countTime').textContent = 1;
+
+            document.getElementById('levelLabel').textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+            updateStatsUI();
+
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('gameArena').classList.remove('hidden');
+            document.getElementById('statsBar').classList.remove('hidden');
+            document.getElementById('statsBar').classList.add('flex');
+
+            document.getElementById('turnCounter').textContent = `Ronda 1/${totalRounds}`;
+
+            drawRoulette();
+        }
+
+        function updateStatsUI() {
+            document.getElementById('scoreText').textContent = `${score} pts`;
+            document.getElementById('livesText').textContent = lives;
+            document.getElementById('streakText').textContent = `x${streak}`;
+        }
+
+        function endGame() {
+            playSound('win');
+            createConfetti();
+            document.getElementById('gameArena').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+
+            document.getElementById('finalScore').textContent = `${score} pts`;
+            
+            const accuracy = Math.round((correctAnswersCount / totalRounds) * 100);
+            document.getElementById('finalAccuracy').textContent = `${accuracy}%`;
+
+            const badgeTitle = document.getElementById('badgeTitle');
+            const badgeDesc = document.getElementById('badgeDesc');
+
+            if (accuracy >= 80) {
+                badgeTitle.textContent = "🏆 Campeón ESI y Salud Reproductiva";
+                badgeDesc.textContent = "¡Demostraste un conocimiento extraordinario sobre prevención y autocuidado!";
+            } else if (accuracy >= 50) {
+                badgeTitle.textContent = "🎖️ Promotor de la Prevención";
+                badgeDesc.textContent = "¡Buen trabajo! Repasa el glosario para pulir detalles y conceptos clave.";
+            } else {
+                badgeTitle.textContent = "🌱 Aprendiz en Formación";
+                badgeDesc.textContent = "¡Buen intento! Explora la guía educativa para reforzar tu aprendizaje.";
+            }
+        }
+
+        function restartGame() {
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+            document.getElementById('statsBar').classList.add('hidden');
+        }
+
+        function openGuideModal() {
+            renderGuide('all');
+            document.getElementById('guideModal').classList.remove('hidden');
+        }
+
+        function closeGuideModal() {
+            document.getElementById('guideModal').classList.add('hidden');
+        }
+
+        function filterGuide(category) {
+            const tabs = document.querySelectorAll('.guide-tab');
+            tabs.forEach(tab => {
+                if (tab.getAttribute('onclick').includes(`'${category}'`)) {
+                    tab.className = "guide-tab active px-3 py-1.5 rounded-xl text-xs font-bold bg-brand-500 text-white transition";
+                } else {
+                    tab.className = "guide-tab px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
+                }
+            });
+
+            renderGuide(category);
+        }
+
+        function renderGuide(category) {
+            const container = document.getElementById('guideContent');
+            container.innerHTML = '';
+
+            const filteredData = category === 'all' 
+                ? glossaryData 
+                : glossaryData.filter(item => item.type === category);
+
+            filteredData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "p-4 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-brand-500/50 transition shadow-md";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="font-bold text-white text-sm md:text-base">${item.title}</h4>
+                        <span class="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/40">
+                            ${item.tag}
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">${item.desc}</p>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.onload = function() {
+            drawRoulette();
+        };
+    </script>
+</body>
+</html>
